@@ -1,11 +1,9 @@
 import os
 from tkinter import * 
+from  tkinter import  _setit
 import requests
 import json
 from datetime import datetime
-
-from requests.sessions import default_headers
-
 
 history_file_name = 'history.json'
 
@@ -91,13 +89,13 @@ def get_history():
     else:
         return []
 
-def search_by_date(selected_date):
+def search_by_date():
     exchanges = read_json()
     if(exchanges):
         history_list.delete(0,END)
         i = 0
         for date in exchanges:
-            if selected_date == datetime.strptime(date, "%Y-%m-%d %H:%M:%S").date():
+            if datetime.strptime(search_by_date_str.get(), "%Y-%m-%d").date() == datetime.strptime(date, "%Y-%m-%d %H:%M:%S").date():
                 history_list.insert(i+1, f"{date}: {exchanges[date]['s_amount']} {exchanges[date]['from']} to {round(exchanges[date]['d_amount'], 2)} {exchanges[date]['to']}")
     
 def search_by_currency(currency):
@@ -134,7 +132,7 @@ def update_search_date_options():
     dates = get_dates()
     search_by_date_str.set(dates[0])
     for d in dates:
-        search_by_date_options["menu"].add_command(label=d)
+        search_by_date_options["menu"].add_command(label=d, command=_setit(search_by_date_str,d) )
 
 currencies = get_currencies()
 
@@ -167,18 +165,19 @@ dest_currency_output.pack(side=LEFT, anchor='n')
 search_by_date_lst = get_dates()
 search_by_date_str = StringVar(master=window)
 search_by_date_str.set(search_by_date_lst[0])
-search_by_date_options = OptionMenu(window, search_by_date_str, *search_by_date_lst, command=search_by_date)
+search_by_date_options = OptionMenu(window, search_by_date_str, *search_by_date_lst)
 search_by_date_options.pack()
+
+search_by_date_button = Button(text="Search by date", width=15, height=1, command= search_by_date )
+search_by_date_button.pack()
 
 search_by_currency_str = StringVar(master=window)
 search_by_currency_str.set(currencies[0])
 search_by_currency_options = OptionMenu(window, search_by_currency_str, *currencies, command=search_by_currency)
 search_by_currency_options.pack()
 
-
-button = Button(text="Reset history data", width=15, height=1, command= update_history_list )
-button.pack()
-
+reset_hitory_button = Button(text="Reset history data", width=15, height=1, command= update_history_list )
+reset_hitory_button.pack()
 
 history = get_history()
 history_list = Listbox(window, width= 100)
@@ -187,7 +186,4 @@ if(history):
     for h in history:
         history_list.insert(history.index(h), h)
 
-
-
 window.mainloop()
-
